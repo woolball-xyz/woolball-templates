@@ -55,6 +55,35 @@ namespace WoolBall.SpeechToText
         }
 
         /// <summary>
+        /// Transcribe audio from URL with timestamps
+        /// </summary>
+        public async Task<TranscriptionResult> TranscribeFromUrlWithTimestampsAsync(
+            string audioUrl,
+            string language = "pt")
+        {
+            return await TranscribeFromUrlAsync(audioUrl, new TranscriptionOptions
+            {
+                Language = language,
+                ReturnTimestamps = true
+            });
+        }
+
+        /// <summary>
+        /// Transcribe audio from URL with WebVTT subtitles
+        /// </summary>
+        public async Task<TranscriptionResult> TranscribeFromUrlWithWebVttAsync(
+            string audioUrl,
+            string language = "pt")
+        {
+            return await TranscribeFromUrlAsync(audioUrl, new TranscriptionOptions
+            {
+                Language = language,
+                ReturnTimestamps = true,
+                Webvtt = true
+            });
+        }
+
+        /// <summary>
         /// Transcribes audio from a file
         /// </summary>
         /// <param name="audioData">Byte array containing the audio or video file data</param>
@@ -78,6 +107,35 @@ namespace WoolBall.SpeechToText
             
             var jsonResponse = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<TranscriptionResult>(jsonResponse);
+        }
+
+        /// <summary>
+        /// Transcribe audio file with timestamps
+        /// </summary>
+        public async Task<TranscriptionResult> TranscribeFromFileWithTimestampsAsync(
+            byte[] audioData,
+            string language = "pt")
+        {
+            return await TranscribeFromFileAsync(audioData, new TranscriptionOptions
+            {
+                Language = language,
+                ReturnTimestamps = true
+            });
+        }
+
+        /// <summary>
+        /// Transcribe audio file with WebVTT subtitles
+        /// </summary>
+        public async Task<TranscriptionResult> TranscribeFromFileWithWebVttAsync(
+            byte[] audioData,
+            string language = "pt")
+        {
+            return await TranscribeFromFileAsync(audioData, new TranscriptionOptions
+            {
+                Language = language,
+                ReturnTimestamps = true,
+                Webvtt = true
+            });
         }
 
         /// <summary>
