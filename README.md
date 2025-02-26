@@ -1,1 +1,1 @@
-# woolball-dotnet-template
+# woolball-templates

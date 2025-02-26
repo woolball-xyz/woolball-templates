@@ -30,10 +30,8 @@ namespace WoolBall.SpeechToText
         /// Transcribes audio from a URL
         /// </summary>
         /// <param name="audioUrl">URL of the audio file to transcribe</param>
-        /// <param name="model">Optional: Speech recognition model to use</param>
-        /// <param name="language">Optional: Target language for transcription (e.g. "pt" for Portuguese)</param>
-        /// <param name="returnTimestamps">Optional: Whether to return timestamps for each segment</param>
-        /// <returns>Transcription result containing text and optional timestamps</returns>
+        /// <param name="options">Optional: TranscriptionOptions object containing model, language, and other settings</param>
+        /// <returns>TranscriptionResult containing text and optional timestamps or WebVTT</returns>
         public async Task<TranscriptionResult> TranscribeFromUrlAsync(
             string audioUrl,
             TranscriptionOptions options = null)
@@ -87,10 +85,8 @@ namespace WoolBall.SpeechToText
         /// Transcribes audio from a file
         /// </summary>
         /// <param name="audioData">Byte array containing the audio or video file data</param>
-        /// <param name="model">Optional: Speech recognition model to use</param>
-        /// <param name="language">Optional: Target language for transcription (e.g. "pt" for Portuguese)</param>
-        /// <param name="returnTimestamps">Optional: Whether to return timestamps for each segment</param>
-        /// <returns>Transcription result containing text and optional timestamps</returns>
+        /// <param name="options">Optional: TranscriptionOptions object containing model, language, and other settings</param>
+        /// <returns>TranscriptionResult containing text and optional timestamps or WebVTT</returns>
         public async Task<TranscriptionResult> TranscribeFromFileAsync(
             byte[] audioData,
             TranscriptionOptions options = null)
