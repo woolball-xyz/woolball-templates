@@ -7,47 +7,47 @@ class Program
 {
     static async Task Main()
     {
-        // Inicializar o serviço
+        // Initialize the speech-to-text service
         var service = new WoolBallSpeechToTextWebService();
 
         try
         {
-            // Exemplo 1: Transcrição básica de URL
+            // Example 1: Basic speech-to-text extraction from URL
             var result1 = await service.TranscribeFromUrlAsync(
                 "https://example.com/audio-pt.mp3"
             );
-            Console.WriteLine($"Transcrição básica: {result1.Text}");
+            Console.WriteLine($"Basic transcription: {result1.Text}");
 
-            // Exemplo 2: Transcrição de URL com timestamps em inglês
+            // Example 2: Speech-to-text extraction from URL with timestamps (English audio)
             var result2 = await service.TranscribeFromUrlWithTimestampsAsync(
-                "https://example.com/audio-en.mp3",
+                "https://example.com/audio-en.wav",
                 language: "en"
             );
-            Console.WriteLine("\nTranscrição com timestamps:");
+            Console.WriteLine("\nTranscription with timestamps:");
             foreach (var chunk in result2.Chunks)
             {
                 Console.WriteLine($"{chunk.Start:0.00}s -> {chunk.End:0.00}s: {chunk.Text}");
             }
 
-            // Exemplo 3: Transcrição de URL com legendas WebVTT em espanhol
+            // Example 3: Speech-to-text extraction from URL with WebVTT subtitles (Spanish audio)
             var result3 = await service.TranscribeFromUrlWithWebVttAsync(
-                "https://example.com/audio-es.mp3",
+                "https://example.com/audio-es.mp4",
                 language: "es"
             );
-            Console.WriteLine($"\nLegendas WebVTT:\n{result3.WebVtt}");
+            Console.WriteLine($"\nWebVTT Subtitles:\n{result3.WebVtt}");
 
-            // Exemplo 4: Transcrição de arquivo local
+            // Example 4: Speech-to-text extraction from local file
             byte[] audioData = File.ReadAllBytes("audio.mp3");
             var result4 = await service.TranscribeFromFileWithWebVttAsync(
                 audioData,
                 language: "pt"
             );
             
-            // Salvar as legendas em um arquivo .vtt
-            File.WriteAllText("legendas.vtt", result4.WebVtt);
-            Console.WriteLine("\nLegendas salvas em 'legendas.vtt'");
+            // Save the subtitles to a .vtt file
+            File.WriteAllText("subtitles.vtt", result4.WebVtt);
+            Console.WriteLine("\nSubtitles saved to 'subtitles.vtt'");
 
-            // Exemplo 5: Uso avançado com opções personalizadas
+            // Example 5: Advanced usage with custom options
             var result5 = await service.TranscribeFromUrlAsync(
                 "https://example.com/audio.mp3",
                 new TranscriptionOptions
