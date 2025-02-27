@@ -9,6 +9,6 @@
     "dev": "node --watch server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.21.2"
   }
 }
