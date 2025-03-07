@@ -14,17 +14,17 @@ class WoolBallSpeechToTextService {
     }
 
     async transcribeFromUrl(audioUrl, options = new TranscriptionOptions()) {
-        const params = new URLSearchParams({
-            url: audioUrl,
-            model: options.model,
-            language: options.language,
-            returnTimestamps: options.returnTimestamps.toString(),
-            webvtt: options.webvtt.toString()
-        });
-        const requestUrl = `${this.baseUrl}/speech-to-text?${params}`;
+        const formData = new FormData();
+        formData.append('url', audioUrl);
+        formData.append('model', options.model);
+        formData.append('language', options.language);
+        formData.append('returnTimestamps', options.returnTimestamps.toString());
+        formData.append('webvtt', options.webvtt.toString());
         
-        const response = await fetch(requestUrl, {
-            headers: this.headers
+        const response = await fetch(`${this.baseUrl}/speech-to-text`, {
+            method: 'POST',
+            headers: this.headers,
+            body: formData
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -49,18 +49,17 @@ class WoolBallSpeechToTextService {
     }
 
     async transcribeFromFile(audioData, options = new TranscriptionOptions()) {
-        const params = new URLSearchParams({
-            model: options.model,
-            language: options.language,
-            returnTimestamps: options.returnTimestamps.toString(),
-            webvtt: options.webvtt.toString()
-        });
-        const requestUrl = `${this.baseUrl}/speech-to-text?${params}`;
+        const formData = new FormData();
+        formData.append('file', new Blob([audioData]), 'audio.mp3');
+        formData.append('model', options.model);
+        formData.append('language', options.language);
+        formData.append('returnTimestamps', options.returnTimestamps.toString());
+        formData.append('webvtt', options.webvtt.toString());
         
-        const response = await fetch(requestUrl, {
+        const response = await fetch(`${this.baseUrl}/speech-to-text`, {
             method: 'POST',
-            headers: { ...this.headers, 'Content-Type': 'audio/mpeg' },
-            body: audioData
+            headers: this.headers,
+            body: formData
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

@@ -1,7 +1,9 @@
 import express from 'express';
+import multer from 'multer';
 
 const app = express();
 const port = process.env.PORT || 3000;
+const upload = multer();
 
 const BASE_URL = "https://api.woolball.xyz/v1";
 const API_KEY = "{{API_KEY}}";
@@ -20,27 +22,32 @@ app.use(express.raw({
 }));
 
 // Routes
-app.post('/speech-to-text', async (req, res) => {
+app.post('/speech-to-text', upload.single('file'), async (req, res) => {
     try {
-        const { language = 'pt', returnTimestamps = false, webvtt = false, model = 'onnx-community/whisper-large-v3-turbo_timestamped', url } = 
-            req.is('application/json') ? req.body : {};
+        const { language = 'pt', returnTimestamps = false, webvtt = false, model = 'onnx-community/whisper-large-v3-turbo_timestamped', url } = req.body;
             
-        const requestUrl = `${BASE_URL}/speech-to-text?model=${encodeURIComponent(model)}&language=${language}&returnTimestamps=${returnTimestamps}&webvtt=${webvtt}`;
+        const requestUrl = `${BASE_URL}/speech-to-text`;
+
+        const formData = new FormData();
+        formData.append('model', model);
+        formData.append('language', language);
+        formData.append('returnTimestamps', returnTimestamps);
+        formData.append('webvtt', webvtt);
 
         let response;
         if (url) {
+            formData.append('url', url);
             response = await fetch(requestUrl, {
                 method: 'POST',
-                headers: { ...HEADERS, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
+                headers: HEADERS,
+                body: formData
             });
-        } else if (req.is(['audio/*', 'video/*', 'application/octet-stream'])) {
-            // Use the original content type from the request, or fallback to audio/mpeg
-            const contentType = req.get('content-type') || 'audio/mpeg';
+        } else if (req.file) {
+            formData.append('file', new Blob([req.file.buffer]), req.file.originalname);
             response = await fetch(requestUrl, {
                 method: 'POST',
-                headers: { ...HEADERS, 'Content-Type': contentType },
-                body: req.body
+                headers: HEADERS,
+                body: formData
             });
         } else {
             return res.status(400).json({ error: 'No audio/video file or URL provided' });

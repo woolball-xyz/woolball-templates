@@ -6,63 +6,45 @@ const HEADERS = { 'Authorization': `Bearer ${API_KEY}` };
 
 export async function POST(request: NextRequest) {
     try {
-        // Handle both FormData and direct file uploads
         const contentType = request.headers.get('content-type') || '';
-        let audioUrl: string | null = null;
-        let audioFile: ArrayBuffer | null = null;
-        let language = 'pt';
-        let returnTimestamps = false;
-        let webvtt = false;
-        let model = 'onnx-community/whisper-large-v3-turbo_timestamped';
-        let fileType: string | null = null;
+        const requestUrl = `${BASE_URL}/speech-to-text`;
+        const formData = new FormData();
 
         if (contentType.includes('multipart/form-data')) {
-            const formData = await request.formData();
-            const file = formData.get('file') as File | null;
-            audioUrl = formData.get('url') as string;
-            language = formData.get('language') as string || language;
-            returnTimestamps = formData.get('returnTimestamps') === 'true';
-            webvtt = formData.get('webvtt') === 'true';
-            model = formData.get('model') as string || model;
-
-            if (file) {
-                audioFile = await file.arrayBuffer();
-                fileType = file.type || 'audio/mpeg';
+            const originalFormData = await request.formData();
+            // Forward all form fields
+            for (const [key, value] of originalFormData.entries()) {
+                formData.append(key, value);
             }
         } else if (contentType.includes('application/json')) {
             const jsonData = await request.json();
-            audioUrl = jsonData.url;
-            language = jsonData.language || language;
-            returnTimestamps = jsonData.returnTimestamps || returnTimestamps;
-            webvtt = jsonData.webvtt || webvtt;
-            model = jsonData.model || model;
+            if (jsonData.url) {
+                formData.append('url', jsonData.url);
+            }
+            formData.append('model', jsonData.model || 'onnx-community/whisper-large-v3-turbo_timestamped');
+            formData.append('language', jsonData.language || 'pt');
+            formData.append('returnTimestamps', String(jsonData.returnTimestamps || false));
+            formData.append('webvtt', String(jsonData.webvtt || false));
         } else if (
             contentType.startsWith('audio/') || 
             contentType.startsWith('video/') || 
             contentType === 'application/octet-stream'
         ) {
-            audioFile = await request.arrayBuffer();
-            fileType = contentType;
-        }
-
-        const requestUrl = `${BASE_URL}/speech-to-text?model=${encodeURIComponent(model)}&language=${language}&returnTimestamps=${returnTimestamps}&webvtt=${webvtt}`;
-
-        let response;
-        if (audioUrl) {
-            response = await fetch(requestUrl, {
-                method: 'POST',
-                headers: { ...HEADERS, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: audioUrl })
-            });
-        } else if (audioFile) {
-            response = await fetch(requestUrl, {
-                method: 'POST',
-                headers: { ...HEADERS, 'Content-Type': fileType || 'audio/mpeg' },
-                body: audioFile
-            });
+            const fileData = await request.arrayBuffer();
+            formData.append('file', new Blob([fileData]), 'audio.mp3');
+            formData.append('model', 'onnx-community/whisper-large-v3-turbo_timestamped');
+            formData.append('language', 'pt');
+            formData.append('returnTimestamps', 'false');
+            formData.append('webvtt', 'false');
         } else {
             return NextResponse.json({ error: 'No audio/video file or URL provided' }, { status: 400 });
         }
+
+        const response = await fetch(requestUrl, {
+            method: 'POST',
+            headers: HEADERS,
+            body: formData
+        });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

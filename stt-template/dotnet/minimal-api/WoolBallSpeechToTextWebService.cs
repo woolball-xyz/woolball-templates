@@ -38,14 +38,16 @@ namespace WoolBall.SpeechToText
         {
             options ??= new TranscriptionOptions();
 
-            var requestUrl = $"{BaseUrl}/speech-to-text?model={Uri.EscapeDataString(options.Model)}&language={options.Language}&returnTimestamps={options.ReturnTimestamps}&webvtt={options.Webvtt}";
+            var requestUrl = $"{BaseUrl}/speech-to-text";
             
-            var content = new StringContent(
-                JsonSerializer.Serialize(new { url = audioUrl }),
-                System.Text.Encoding.UTF8,
-                "application/json");
+            var formContent = new MultipartFormDataContent();
+            formContent.Add(new StringContent(audioUrl), "url");
+            formContent.Add(new StringContent(options.Model), "model");
+            formContent.Add(new StringContent(options.Language), "language");
+            formContent.Add(new StringContent(options.ReturnTimestamps.ToString()), "returnTimestamps");
+            formContent.Add(new StringContent(options.Webvtt.ToString()), "webvtt");
 
-            var response = await _httpClient.PostAsync(requestUrl, content);
+            var response = await _httpClient.PostAsync(requestUrl, formContent);
             response.EnsureSuccessStatusCode();
             
             var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -93,12 +95,16 @@ namespace WoolBall.SpeechToText
         {
             options ??= new TranscriptionOptions();
 
-            var requestUrl = $"{BaseUrl}/speech-to-text?model={Uri.EscapeDataString(options.Model)}&language={options.Language}&returnTimestamps={options.ReturnTimestamps}&webvtt={options.Webvtt}";
+            var requestUrl = $"{BaseUrl}/speech-to-text";
             
-            var content = new ByteArrayContent(audioData);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/mpeg");
+            var formContent = new MultipartFormDataContent();
+            formContent.Add(new ByteArrayContent(audioData), "file", "audio.mp3");
+            formContent.Add(new StringContent(options.Model), "model");
+            formContent.Add(new StringContent(options.Language), "language");
+            formContent.Add(new StringContent(options.ReturnTimestamps.ToString()), "returnTimestamps");
+            formContent.Add(new StringContent(options.Webvtt.ToString()), "webvtt");
 
-            var response = await _httpClient.PostAsync(requestUrl, content);
+            var response = await _httpClient.PostAsync(requestUrl, formContent);
             response.EnsureSuccessStatusCode();
             
             var jsonResponse = await response.Content.ReadAsStringAsync();
